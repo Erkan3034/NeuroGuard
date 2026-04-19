@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="NeuroGuard — Profesyonel PC Yönetim ve Tehdit Tespit Sistemi. Bilgisayarınızdaki tüm süreçleri, kaynak kullanımını ve güvenlik tehditlerini izleyin.">
+  <title>NeuroGuard — PC Yönetim Sistemi</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡</text></svg>">
+</head>
+<body>
+
+  <!-- ═══ LOADING SCREEN ═══ -->
+  <div class="loading-screen" id="loadingScreen">
+    <div class="loading-spinner"></div>
+    <div class="loading-text">Neuroguard Başlatılıyor</div>
+  </div>
+
+  <!-- ═══ TOAST CONTAINER ═══ -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- ═══ CONFIRMATION MODAL ═══ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <div class="modal__header">
+        <div class="modal__icon" id="modalIcon">⚠</div>
+        <h2 class="modal__title" id="modalTitle">İşlem Onayı</h2>
+      </div>
+      <div class="modal__body" id="modalBody">
+        <!-- Dynamic content -->
+      </div>
+      <div class="modal__actions">
+        <button class="btn-cancel" id="modalCancel" onclick="closeModal()">REDDET</button>
+        <button class="btn-confirm" id="modalConfirm">ONAYLA</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ MAIN APP ═══ -->
+  <div class="app" id="app">
+
+    <!-- ─── HEADER ─── -->
+    <header class="header">
+      <div class="header__brand">
+        <div class="header__logo">
+          <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 2L36 11V29L20 38L4 29V11L20 2Z" stroke="#00f0ff" stroke-width="1.5" fill="none"/>
+            <path d="M20 8L30 14V26L20 32L10 26V14L20 8Z" stroke="#00f0ff" stroke-width="1" fill="rgba(0,240,255,0.05)"/>
+            <circle cx="20" cy="20" r="4" fill="#00f0ff" opacity="0.8"/>
+            <line x1="20" y1="16" x2="20" y2="8" stroke="#00f0ff" stroke-width="0.8" opacity="0.5"/>
+            <line x1="23.5" y1="22" x2="30" y2="26" stroke="#00f0ff" stroke-width="0.8" opacity="0.5"/>
+            <line x1="16.5" y1="22" x2="10" y2="26" stroke="#00f0ff" stroke-width="0.8" opacity="0.5"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="header__title">NeuroGuard</h1>
+          <div class="header__subtitle">PC Yönetim &amp; Tehdit Tespit Sistemi</div>
+        </div>
+      </div>
+      <div class="header__status">
+        <div class="header__health">
+          <span class="header__health-label">Sistem Sağlığı</span>
+          <span class="header__health-value" id="healthScore">--</span>
+        </div>
+        <div class="header__connection">
+          <span class="connection-led" id="connectionLed"></span>
+          <span id="connectionText">Bağlanıyor...</span>
+        </div>
+        <div class="header__time" id="headerTime">--:--:--</div>
+      </div>
+    </header>
+
+    <!-- ─── MAIN CONTENT ─── -->
+    <main class="main">
+
+      <!-- SYSTEM INFO BAR -->
+      <div class="system-bar" id="systemBar">
+        <div class="system-bar__item">
+          <span>Uptime:</span>
+          <span class="system-bar__value" id="uptime">--</span>
+        </div>
+        <div class="system-bar__item">
+          <span>Toplam Süreç:</span>
+          <span class="system-bar__value" id="processCount">--</span>
+        </div>
+        <div class="system-bar__item">
+          <span>Tespit Edilen Tehdit:</span>
+          <span class="system-bar__value" id="threatCount" style="color: var(--green-safe);">0</span>
+        </div>
+        <div class="system-bar__item">
+          <span>RAM:</span>
+          <span class="system-bar__value" id="ramSummary">--</span>
+        </div>
+        <div class="system-bar__item">
+          <span>Bağlantı:</span>
+          <span class="system-bar__value" id="connectionCount">--</span>
+        </div>
+        <div class="system-bar__item">
+          <span>Son Güncelleme:</span>
+          <span class="system-bar__value" id="lastUpdate">--</span>
+        </div>
+      </div>
+
+      <!-- GAUGE CARDS -->
+      <div class="gauges" id="gaugesGrid">
+        <!-- CPU Gauge -->
+        <div class="gauge-card" id="cpuCard">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="50"/>
+              <circle class="gauge-fill" id="cpuGauge" cx="60" cy="60" r="50"
+                      stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-value" id="cpuValue">0</span>
+              <span class="gauge-unit">%</span>
+            </div>
+          </div>
+          <div class="gauge-label">CPU</div>
+          <div class="gauge-detail" id="cpuDetail">İşlemci Kullanımı</div>
+        </div>
+
+        <!-- RAM Gauge -->
+        <div class="gauge-card" id="ramCard">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="50"/>
+              <circle class="gauge-fill" id="ramGauge" cx="60" cy="60" r="50"
+                      stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-value" id="ramValue">0</span>
+              <span class="gauge-unit">%</span>
+            </div>
+          </div>
+          <div class="gauge-label">RAM</div>
+          <div class="gauge-detail" id="ramDetail">Bellek Kullanımı</div>
+        </div>
+
+        <!-- DISK Gauge -->
+        <div class="gauge-card" id="diskCard">
+          <div class="gauge-wrapper">
+            <svg class="gauge-svg" viewBox="0 0 120 120">
+              <circle class="gauge-bg" cx="60" cy="60" r="50"/>
+              <circle class="gauge-fill" id="diskGauge" cx="60" cy="60" r="50"
+                      stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+            </svg>
+            <div class="gauge-center">
+              <span class="gauge-value" id="diskValue">0</span>
+              <span class="gauge-unit">%</span>
+            </div>
+          </div>
+          <div class="gauge-label">DİSK</div>
+          <div class="gauge-detail" id="diskDetail">Disk Kullanımı</div>
+        </div>
+
+        <!-- NETWORK Card -->
+        <div class="gauge-card network-card" id="netCard">
+          <div class="network-header">
+            <div class="gauge-label">AĞ TRAFİĞİ</div>
+            <div class="network-stats">
+              <div class="network-stat">
+                <span class="arrow-up">↑</span>
+                <span class="value" id="netSent">0</span>
+                <span style="color:var(--text-muted)">KB/s</span>
+              </div>
+              <div class="network-stat">
+                <span class="arrow-down">↓</span>
+                <span class="value" id="netRecv">0</span>
+                <span style="color:var(--text-muted)">KB/s</span>
+              </div>
+            </div>
+          </div>
+          <div class="network-canvas-wrapper">
+            <canvas id="networkChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK ACTIONS -->
+      <div class="quick-actions">
+        <button class="btn-quick" onclick="requestAction('clean_temp', 'Geçici Dosyalar', 'Temp Klasörü')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Temp Temizle
+        </button>
+        <button class="btn-quick" onclick="refreshAll()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+          Yenile
+        </button>
+      </div>
+
+      <!-- TAB NAVIGATION -->
+      <div class="tabs" id="tabNav">
+        <button class="tab-btn active" data-tab="processes" onclick="switchTab('processes')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Süreçler
+          <span class="tab-btn__badge" id="procBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="threats" onclick="switchTab('threats')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Tehdit Tespiti
+          <span class="tab-btn__badge threat" id="threatBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="startup" onclick="switchTab('startup')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+          Başlangıç
+          <span class="tab-btn__badge" id="startupBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="diskanalysis" onclick="switchTab('diskanalysis')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/></svg>
+          Disk Analizi
+        </button>
+        <button class="tab-btn" data-tab="sysinfo" onclick="switchTab('sysinfo')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          Sistem Bilgisi
+        </button>
+        <button class="tab-btn" data-tab="connections" onclick="switchTab('connections')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          Ağ Bağlantıları
+          <span class="tab-btn__badge" id="connBadge">0</span>
+        </button>
+        <button class="tab-btn" data-tab="actionlog" onclick="switchTab('actionlog')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+          Komut Merkezi
+        </button>
+      </div>
+
+      <!-- TAB PANELS -->
+
+      <!-- PROCESSES TAB -->
+      <div class="tab-panel active" id="panel-processes">
+        <div class="process-toolbar">
+          <div class="search-box">
+            <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" class="search-box__input" id="processSearch"
+                   placeholder="Süreç ara... (isim, PID veya yol)" oninput="filterProcesses()">
+          </div>
+          <div class="filter-btns">
+            <button class="filter-btn active" data-filter="all" onclick="setProcessFilter('all', this)">Tümü</button>
+            <button class="filter-btn" data-filter="high-cpu" onclick="setProcessFilter('high-cpu', this)">Yüksek CPU</button>
+            <button class="filter-btn" data-filter="high-mem" onclick="setProcessFilter('high-mem', this)">Yüksek RAM</button>
+            <button class="filter-btn" data-filter="suspicious" onclick="setProcessFilter('suspicious', this)">Şüpheli</button>
+          </div>
+        </div>
+
+        <div class="data-table-wrapper">
+          <table class="data-table" id="processTable">
+            <thead>
+              <tr>
+                <th data-sort="pid" onclick="sortProcesses('pid')">PID <span class="sort-arrow">▲</span></th>
+                <th data-sort="name" onclick="sortProcesses('name')">Süreç Adı <span class="sort-arrow">▲</span></th>
+                <th data-sort="cpuSeconds" onclick="sortProcesses('cpuSeconds')">CPU (s) <span class="sort-arrow">▲</span></th>
+                <th data-sort="memMB" onclick="sortProcesses('memMB')">RAM (MB) <span class="sort-arrow">▲</span></th>
+                <th>Durum</th>
+                <th>Şirket</th>
+                <th data-sort="threads" onclick="sortProcesses('threads')">Thread <span class="sort-arrow">▲</span></th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="data-table-scroll" id="processTableBody">
+            <table class="data-table">
+              <tbody id="processRows">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- THREATS TAB -->
+      <div class="tab-panel" id="panel-threats">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          Tehdit Analizi
+          <span class="section-title__count" id="threatSectionCount">0 tehdit tespit edildi</span>
+        </div>
+        <div class="threat-list" id="threatList">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <!-- STARTUP TAB -->
+      <div class="tab-panel" id="panel-startup">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/>
+          </svg>
+          Başlangıç Programları
+          <span class="section-title__count" id="startupSectionCount">0 program</span>
+        </div>
+        <div class="startup-list" id="startupList">
+          <!-- Dynamic -->
+        </div>
+      </div>
+
+      <!-- DISK ANALYSIS TAB -->
+      <div class="tab-panel" id="panel-diskanalysis">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/>
+          </svg>
+          Disk Analizi — En Büyük Dosyalar
+          <span class="section-title__count" id="diskAnalysisScanTime">Taranıyor...</span>
+        </div>
+        <!-- Category Summary -->
+        <div class="disk-categories" id="diskCategories"></div>
+        <!-- File Search -->
+        <div class="process-toolbar">
+          <div class="search-box">
+            <svg class="search-box__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" class="search-box__input" id="fileSearch"
+                   placeholder="Dosya ara... (isim, uzantı veya kategori)" oninput="filterFiles()">
+          </div>
+          <div class="filter-btns">
+            <button class="filter-btn active" data-filefilter="all" onclick="setFileFilter('all', this)">Tümü</button>
+            <button class="filter-btn" data-filefilter="Video" onclick="setFileFilter('Video', this)">Video</button>
+            <button class="filter-btn" data-filefilter="Arsiv" onclick="setFileFilter('Arsiv', this)">Arşiv</button>
+            <button class="filter-btn" data-filefilter="Program" onclick="setFileFilter('Program', this)">Program</button>
+            <button class="filter-btn" data-filefilter="Disk Imaji" onclick="setFileFilter('Disk Imaji', this)">Disk İmajı</button>
+            <button class="filter-btn" data-filefilter="Diger" onclick="setFileFilter('Diger', this)">Diğer</button>
+          </div>
+        </div>
+        <!-- Large Files Table -->
+        <div class="data-table-wrapper">
+          <table class="data-table" id="fileTable">
+            <thead>
+              <tr>
+                <th data-filesort="name" onclick="sortFiles('name')">Dosya Adı <span class="sort-arrow">▲</span></th>
+                <th data-filesort="sizeMB" onclick="sortFiles('sizeMB')">Boyut <span class="sort-arrow">▼</span></th>
+                <th data-filesort="category" onclick="sortFiles('category')">Kategori <span class="sort-arrow">▲</span></th>
+                <th>Son Değişiklik</th>
+                <th>Konum</th>
+                <th>İşlem</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="data-table-scroll" id="fileTableBody">
+            <table class="data-table">
+              <tbody id="fileRows">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SYSTEM INFO TAB -->
+      <div class="tab-panel" id="panel-sysinfo">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+          </svg>
+          Sistem Donanım Bilgileri
+        </div>
+        <div class="sysinfo-grid" id="sysinfoGrid">
+          <div class="no-actions">Sistem bilgileri yükleniyor...</div>
+        </div>
+      </div>
+
+      <!-- NETWORK CONNECTIONS TAB -->
+      <div class="tab-panel" id="panel-connections">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+          Aktif Ağ Bağlantıları
+          <span class="section-title__count" id="connSectionCount">0 bağlantı</span>
+        </div>
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Süreç</th>
+                <th>PID</th>
+                <th>Yerel Adres</th>
+                <th>Yerel Port</th>
+                <th>Uzak Adres</th>
+                <th>Uzak Port</th>
+                <th>Durum</th>
+              </tr>
+            </thead>
+          </table>
+          <div class="data-table-scroll">
+            <table class="data-table">
+              <tbody id="connectionRows">
+                <!-- Dynamic -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ACTION LOG TAB -->
+      <div class="tab-panel" id="panel-actionlog">
+        <div class="section-title">
+          <svg class="section-title__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+          </svg>
+          Komut Merkezi — İşlem Geçmişi
+        </div>
+        <div class="action-log" id="actionLog">
+          <div class="no-actions">Henüz bir işlem gerçekleştirilmedi. Tüm işlemler burada loglanacak.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
